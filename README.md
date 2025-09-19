@@ -54,11 +54,25 @@ $USE_PROD = true;   // Production
 - **PDF Generation**: wkhtmltopdf
 - **UI Framework**: jQuery UI for date pickers and interactions
 
+## Database Schema
+
+The system uses a MySQL database `ercolaniCassa` with the following tables:
+
+- **`catalog`** - Product catalog with descriptions and pricing
+- **`shipments`** - Customer shipping information and orders
+- **`shipdetails`** - Individual items within each shipment
+- **`pdf`** - Generated PDF tracking and metadata
+
+### Database Setup
+1. Import the database schema: `mysql -u username -p < ercolaniCassa.sql`
+2. Configure database connection in `/var/www/general_include/general_apridb.inc`
+
 ## Setup
-1. Configure database connection in `/var/www/general_include/general_apridb.inc`
-2. Set environment mode in `/config/environment.php`
-3. Ensure PDF output directory `/pdf/` is writable
-4. Configure wkhtmltopdf path for PDF generation
+1. Import database schema from `ercolaniCassa.sql`
+2. Configure database connection in `/var/www/general_include/general_apridb.inc`
+3. Set environment mode in `/config/environment.php`
+4. Ensure PDF output directory `/pdf/` is writable
+5. Configure wkhtmltopdf path for PDF generation
 
 ## Recent Updates
 - Refactored hardcoded endpoints to use centralized configuration
