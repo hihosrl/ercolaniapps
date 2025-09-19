@@ -37,6 +37,7 @@ function onDeviceReady() {
 var nazioni = new Array("Country / Nazione","Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antarctica", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burma", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo, Democratic Republic", "Congo, Republic of the", "Costa Rica", "Cote d'Ivoire", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "East Timor", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Greenland", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Korea, North", "Korea, South", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Mongolia", "Morocco", "Monaco", "Mozambique", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Norway", "Oman", "Pakistan", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Puerto Rico", "Qatar", "Romania", "Russia", "Rwanda", "Samoa", "San Marino", " Sao Tome", "Saudi Arabia", "Senegal", "Serbia and Montenegro", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "Spain", "Sri Lanka", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe");
 var prodotti=[];
 var timeout='';
+var customerLookupTimeout;
 $(function(){ 
     console.log('fgsfdg');
     $.get(CASSE_ENDPOINT + '?cmd=getProd',function(data){
@@ -48,6 +49,32 @@ $(function(){
 for(var hi=0; hi<nazioni.length; hi++){
         $('#nazione').append("<option value=\""+nazioni[hi]+"\">"+nazioni[hi]+"</option>");
     }  
+
+// Customer lookup button functionality - moved inside document ready
+$(document).ready(function() {
+    console.log('Document ready, looking for lookup button...');
+    var lookupBtn = $('#lookupCustomer');
+    console.log('Lookup button found:', lookupBtn.length > 0);
+    
+    if (lookupBtn.length > 0) {
+        lookupBtn.on('click', function(e){
+            e.preventDefault();
+            console.log('Lookup button clicked!');
+            var email = $('#email').val();
+            console.log('Email value:', email);
+            if (email && validateEmail(email)) {
+                console.log('Valid email, executing customer lookup');
+                lookupCustomerByEmail(email);
+            } else {
+                console.log('Invalid email or empty:', email);
+                alert('Please enter a valid email address first');
+            }
+        });
+        console.log('Click event handler attached to lookup button');
+    } else {
+        console.error('Lookup button not found in DOM!');
+    }
+});
 
 //$('#nascita').on('focus',function(){
         $( "#nascita" ).datepicker({
@@ -322,24 +349,113 @@ $('#savecmd').on('click',function(event){
 caclTotal=function(){
     $('.totalShip').remove();
     let tot=0;
-        $('.itemRow').each(function(){
+    $('.itemRow').each(function(){
         if ($(this).attr('action')=='subtract'){
             tot -= parseFloat($(this).find('.prezzoItem').text())
         }else{
             tot += parseFloat($(this).find('.prezzoItem').text())
         }
-        })
-        if (tot>0){
-            tot=(tot*1).toFixed(2)
-            if(!$('.itemsContainer').find('.totalShip')[0]){
-                $('.itemsContainer').append('<div class="totalShip">'+tot+'</div>')    
-            }else{
-                $('.itemsContainer').find('.totalShip').text(tot);    
-            } 
+    })
+    if (tot>0){
+        tot=(tot*1).toFixed(2)
+        if(!$('.itemsContainer').find('.totalShip')[0]){
+            $('.itemsContainer').append('<div class="totalShip">'+tot+'</div>')    
         }else{
-            $('.totalShip').remove();
-        }
-    
-        
-
+            $('.itemsContainer').find('.totalShip').text(tot);    
+        } 
+    }else{
+        $('.totalShip').remove();
     }
+}
+
+    // Email validation function
+    function validateEmail(email) {
+        var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    // Customer lookup function
+    function lookupCustomerByEmail(email) {
+        // Check if CASSE_ENDPOINT is defined
+        if (typeof CASSE_ENDPOINT === 'undefined') {
+            console.error('CASSE_ENDPOINT is not defined. Environment config may not be loaded.');
+            // Fallback to direct endpoint
+            var endpoint = '../ercolani_casse.php';
+        } else {
+            var endpoint = CASSE_ENDPOINT;
+        }
+        
+        console.log('Making API call to:', endpoint + '?cmd=getCustomerByEmail&email=' + encodeURIComponent(email));
+        
+        $.get(endpoint + '?cmd=getCustomerByEmail&email=' + encodeURIComponent(email), function(data) {
+        console.log('API response:', data);
+        if (data.status === 'found') {
+            console.log('Customer found, populating data');
+            populateCustomerData(data.customer);
+        } else {
+            console.log('Customer not found');
+            clearFormExceptEmail();
+            showCustomerNotFoundModal(email);
+        }
+    }, 'JSON').fail(function(xhr, status, error) {
+        console.error('Customer lookup failed:', status, error);
+        console.error('Response:', xhr.responseText);
+        clearFormExceptEmail();
+        showCustomerNotFoundModal(email);
+    });
+}
+
+    // Populate form with customer data
+    function populateCustomerData(customer) {
+        console.log('Populating form with customer data:', customer);
+        
+        // Show a subtle indication that data was found
+        $('#email').addClass('customer-found');
+        
+        // Populate fields with existing data
+        $('#nome').val(customer.nome);
+        $('#cognome').val(customer.cognome);
+        $('#indirizzo').val(customer.indirizzo);
+        $('#citta').val(customer.citta);
+        $('#cap').val(customer.cap);
+        $('#tel').val(customer.telefono);
+        $('#prov').val(customer.prov);
+        $('#nascita').val(customer.nascita);
+        
+        // Set country dropdown
+        if (customer.nazione) {
+            $('#nazione').val(customer.nazione);
+        }
+        
+        console.log('Form populated successfully');
+        
+        // Add visual feedback
+        setTimeout(function() {
+            $('#email').removeClass('customer-found');
+        }, 2000);
+    }
+
+// Clear form fields except email when customer not found
+function clearFormExceptEmail() {
+    console.log('Clearing form fields except email');
+    $('#nome').val('');
+    $('#cognome').val('');
+    $('#indirizzo').val('');
+    $('#citta').val('');
+    $('#cap').val('');
+    $('#tel').val('');
+    $('#prov').val('');
+    $('#nascita').val('');
+    $('#nazione').val('Country / Nazione');
+}
+
+// Show custom modal for customer not found
+function showCustomerNotFoundModal(email) {
+    $('#modalEmail').text(email);
+    $('#customerNotFoundModal').fadeIn(300);
+}
+
+// Close customer not found modal
+function closeCustomerNotFoundModal() {
+    $('#customerNotFoundModal').fadeOut(300);
+}

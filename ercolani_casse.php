@@ -1,7 +1,16 @@
 <?php
-ob_end_clean();
+// CORS headers must be first - before any output or ob_end_clean()
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+ob_end_clean();
 
 // Load centralized environment configuration
 require_once __DIR__ . '/config/environment.php';
@@ -48,6 +57,22 @@ switch($_REQUEST['cmd']){
 	echo json_encode($aProdotti);
 	exit;
 	break;
+  case 'getCustomerByEmail':
+	if ($_REQUEST['email'] && filter_var($_REQUEST['email'], FILTER_VALIDATE_EMAIL)){
+		$email = mysql_escape_string($_REQUEST['email']);
+		$q = "SELECT * FROM shipments WHERE email = '$email' ORDER BY id DESC LIMIT 1";
+		$r = mysql_query($q);
+		if ($r && mysql_num_rows($r) > 0) {
+			$customer = mysql_fetch_assoc($r);
+			echo json_encode(array('status' => 'found', 'customer' => $customer));
+		} else {
+			echo json_encode(array('status' => 'not_found'));
+		}
+	} else {
+		echo json_encode(array('status' => 'invalid_email'));
+	}
+	exit;
+	break;
 	case 'markViewed':
 	if ($_REQUEST['pdf']!=''){
 		if (mysql_query("update pdf set is_new='0' where shipment_id='{$_REQUEST['pdf']}'")){
@@ -79,7 +104,7 @@ switch($_REQUEST['cmd']){
   case 'insertData':
   $destpath=(dirname(__FILE__)).'/pdf/';
   //print_r($_REQUEST);
-  $q="insert into shipments values('','BT','".mysql_escape_string($_REQUEST['nome'])."','".mysql_escape_string($_REQUEST['cognome'])."','".mysql_escape_string($_REQUEST['indirizzo'])."','".mysql_escape_string($_REQUEST['citta'])."','".mysql_escape_string($_REQUEST['cap'])."','".mysql_escape_string($_REQUEST['nazione'])."','".mysql_escape_string($_REQUEST['tel'])."','".mysql_escape_string($_REQUEST['email'])."','".mysql_escape_string($_REQUEST['prov'])."','".mysql_escape_string($_REQUEST['nascita'])."')";
+  $q="insert into shipments values('','BT','".mysql_escape_string($_REQUEST['nome'])."','".mysql_escape_string($_REQUEST['cognome'])."','".mysql_escape_string($_REQUEST['indirizzo'])."','".mysql_escape_string($_REQUEST['citta'])."','".mysql_escape_string($_REQUEST['cap'])."','".mysql_escape_string($_REQUEST['nazione'])."','".mysql_escape_string($_REQUEST['tel'])."','".mysql_escape_string($_REQUEST['email'])."','".mysql_escape_string($_REQUEST['prov'])."','".mysql_escape_string($_REQUEST['nascita'])."',NOW())";
   //echo $q;
   if ($r=mysql_query($q)){
 	$id=mysql_insert_id();

@@ -81,7 +81,8 @@ CREATE TABLE `shipments` (
   `telefono` varchar(32) NOT NULL,
   `email` varchar(64) NOT NULL,
   `prov` varchar(10) NOT NULL,
-  `nascita` varchar(10) NOT NULL
+  `nascita` varchar(10) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3;
 
 --

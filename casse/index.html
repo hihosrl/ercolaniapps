@@ -43,11 +43,26 @@
     <body>
         <div class="overlay"><div class="overlaytxt"><span class="payoff"><b>SHIPMENT MODULE<br><i>MODULO DI INVIO</i></b></span><span class="discount"> - <i></i></span><span class="goon">touch the screen - <i>tocca lo schermo</i></span></div></div>
         <div class="overlaypost"><div class="overlaytxt"><span class="payoff"><b>THANK YOU - <i>GRAZIE</i></b></span><div id="postContainer"></div></div></div>
+        <div class="customer-not-found-modal" id="customerNotFoundModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Cliente non trovato</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Utente con mail <span id="modalEmail"></span> non trovato.</p>
+                    <p>Per aggiungerlo compila i campi manualmente</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="modal-close-btn" onclick="closeCustomerNotFoundModal()">OK</button>
+                </div>
+            </div>
+        </div>
         <div class="header">&nbsp;</div>
         <h1>SHIPMENT MODULE / MODULO INVIO</h1>
         <form id="mailSubscribe">
             <div class="nlinput email mand">
                 <input type="email" id="email" placeholder="Email" />
+                <button type="button" id="lookupCustomer" class="lookup-btn" title="Search for existing customer data">🔍</button>
             </div>
             <div class="nlinput nome mand">
                 <input type=text id="nome" placeholder="First Name / Nome" />

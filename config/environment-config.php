@@ -25,6 +25,7 @@ echo "var API_BASE_URL = USE_PROD ? API_BASE_URL_PROD : API_BASE_URL_DEV;\n\n";
 
 echo "// Endpoint configurations\n";
 echo "var CASSE_ENDPOINT = API_BASE_URL + '/ercolani_casse.php';\n";
-echo "var SUBSCRIBE_CANTINE_ENDPOINT = '/ercolani_subscribe_cantine.php';\n";
+echo "var MONITOR_ENDPOINT = API_BASE_URL + '/ercolani_monitor.php';\n";
+echo "var SUBSCRIBE_CANTINE_ENDPOINT = API_BASE_URL + '/ercolani_subscribe_cantine.php';\n";
 echo "var SUBSCRIBE_VINERIA_ENDPOINT = API_BASE_URL + '/ercolani_subscribe_vineria.php';\n";
 ?>
