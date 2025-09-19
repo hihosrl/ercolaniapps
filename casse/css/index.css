@@ -1,0 +1,278 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+* {
+    -webkit-tap-highlight-color: rgba(0,75,0,157); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
+}
+html:root {font-size: 1.9vw;}
+
+body {
+    -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
+    -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
+    -webkit-user-select: none;                  /* prevent copy paste, to allow, change 'none' to 'text' */
+    background-color: #ffffff;
+    font-family: system-ui, -apple-system, -apple-system-font, 'Segoe UI', 'Roboto', sans-serif;
+    font-size: 12px;
+    height:100vh;
+    margin:0px;
+    padding:0px;
+    /* Padding to avoid the "unsafe" areas behind notches in the screen */
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    text-transform:uppercase;
+    width:100%;
+}
+
+/* Portrait layout (default) */
+.app {
+    background:url(../img/logo.png) no-repeat center top; /* 170px x 200px */
+    position:absolute;             /* position in the center of the screen */
+    left:50%;
+    top:50%;
+    height:50px;                   /* text area height */
+    width:225px;                   /* text area width */
+    text-align:center;
+    padding:180px 0px 0px 0px;     /* image height is 200px (bottom 20px are overlapped with text) */
+    margin:-115px 0px 0px -112px;  /* offset vertical: half of image height and text area height */
+                                   /* offset horizontal: half of text area width */
+}
+
+/* Landscape layout (with min-width) */
+@media screen and (min-aspect-ratio: 1/1) and (min-width:400px) {
+    .app {
+        background-position:left center;
+        padding:75px 0px 75px 170px;  /* padding-top + padding-bottom + text area = image height */
+        margin:-90px 0px 0px -198px;  /* offset vertical: half of image height */
+                                      /* offset horizontal: half of image width and text area width */
+    }
+}
+
+h1 {
+    font-size:24px;
+    font-weight:normal;
+    margin:0px;
+    overflow:visible;
+    padding:0px;
+    text-align:center;
+}
+
+.event {
+    border-radius:4px;
+    color:#FFFFFF;
+    font-size:12px;
+    margin:0px 30px;
+    padding:2px 0px;
+}
+
+.event.listening {
+    background-color:#333333;
+    display:block;
+}
+
+.event.received {
+    background-color:#4B946A;
+    display:none;
+}
+
+#deviceready.ready .event.listening { display: none; }
+#deviceready.ready .event.received { display: block; }
+
+@keyframes fade {
+    from { opacity: 1.0; }
+    50% { opacity: 0.4; }
+    to { opacity: 1.0; }
+}
+
+.blink {
+    animation:fade 3000ms infinite;
+    -webkit-animation:fade 3000ms infinite;
+}
+
+
+.blinkbd {
+    animation:bordblink 1000ms infinite;
+    -webkit-animation:bordblink 1000ms infinite;
+    border: 3px solid #000;
+}
+
+@keyframes bordblink {
+    from { border-color: #f00; }
+    50% { border-color: #000; }
+    to { border-color: #f00; }
+}
+
+
+@media screen and (prefers-color-scheme: dark) {
+    body {
+        background-image:linear-gradient(to bottom, #585858 0%, #1B1B1B 51%);
+    }
+}
+.nlinput input,.nlinput select {
+    font-size: 2rem;
+    width: 48rem;
+    box-sizing: border-box;
+}
+.nlinput textarea {
+    font-size: 0.8rem;
+    width: 48rem;
+    height: 17rem;
+    box-sizing: border-box;
+}
+.nlinput {
+    content: '*';
+    font-size: 2rem;
+    display: block;
+    margin: 0.4rem auto;
+    width: 50rem;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-align: right;
+    position: relative;
+}
+
+.mand:before {
+    content: '*';
+    font-size: 3.5rem;
+    width: 2rem;
+    box-sizing: border-box;
+position: absolute;left: 0;/* border: 1px solid; */line-height: 3.4rem;vertical-align: bottom;display: block;height: 2.6rem;}
+.mand.alert:before {
+    
+color: #f00;  
+animation: blink 1s infinite;
+}
+@keyframes blink{
+  0% {
+    color:  #f00;
+  }
+  80% {
+    color: #f000;
+  }
+}
+
+div#savecmd {
+    font-size: 2rem;
+    display: block;
+    margin: auto;
+    border:1px solid #000;
+    width: 33rem;
+    padding: 0.5rem;
+    text-align: center;
+    background: #fff;
+    border-radius: 0.5rem;
+    white-space: normal;
+    margin: 1rem auto;
+}
+div.ui-datepicker{
+ font-size:1.5rem;
+}
+label {
+    font-size: 1.2rem;
+    white-space: normal;
+    display: inline-block;
+    width: 33rem;
+}.nlinput.mand {}
+
+
+
+.nlinput input#privacy {
+    width: 1rem;
+    font-size: 2rem;
+}
+.pprivl {
+    font-size: 1.4rem;
+    border: 1px solid #000;
+    width: 48rem;
+    margin-left: 2rem;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    text-align: center;
+    font-weight: bold;
+    background: aliceblue;
+    padding: 0.4rem;
+    box-sizing: border-box;
+}
+input[type=checkbox]
+{
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(3); /* IE */
+  -moz-transform: scale(3); /* FF */
+  -webkit-transform: scale(3); /* Safari and Chrome */
+  -o-transform: scale(3); /* Opera */
+  transform: scale(3);
+  height: 2.5rem;
+  margin-left: 0rem;
+  position: absolute;
+  left: 2rem;
+  transform-origin: left;
+}
+.overlay{
+    display:block;
+    position:fixed;
+    z-index:10;
+    /* background:#999; */
+    width: 100%;
+    height:  100%;
+background: url('../img/logo_ercolani.png');background-color: #ffffff;background-size: 44% auto;background-repeat: no-repeat;background-position: center;}
+.overlaypost{
+    
+    display: none;position:fixed;
+    z-index:10;
+    background:#999;
+    width: 100%;
+    height:  100%;
+background: url('../img/logo_ercolani.png');background-color: #fff;background-size: 60% auto;background-repeat: no-repeat;background-position: center;}
+
+
+.overlaytxt {position: absolute;bottom: 7rem;width: 100%;text-align: center;margin-bottom: 2rem;font-size: 2rem;}
+.header{
+  position: relative;background: url('../img/logo_ercolani.png');background-color: #fff0;background-size: 14% auto;background-repeat: no-repeat;background-position: center;
+top: 5px;height: 10rem;width: 100%;}
+
+.overlaytxt b {font-size: 2.1rem;display: block;width: 100%;transform-origin: center;white-space: nowrap;}
+.overlaypost .overlaytxt b {font-size: 2.1rem;display: block;transform: scaleX(1.2);width: 100%;transform-origin: center;white-space: nowrap;}
+
+span.discount {display: block;/* transform: scaleX(2); */font-size: 1.1rem;}
+span.goon {display: block;transform: scaleX(2);font-size: 1.2rem;}
+.overlaypost span.goon {display: block;transform: scaleX(1);font-size: 0.8rem;margin-top: 0.4rem;}
+
+input.alert:after {
+  content:' ';
+  background: #ff9595;}
+.pendingbadge {position: fixed;/* border: 1px solid #000; */z-index: 100;right: 1rem;top: 1rem;width: 2rem;height: 2rem;border-radius: 1rem;line-height: 2rem;text-align: center;font-size: 1.2rem;background: #ffdc55;box-shadow: -1px 1px 4px 0px #000;}
+
+.btn:after {content: attr(btext);}
+.btn {border:1px solid #000;display: inline-block;font-size: 2rem;margin-left: 0.5rem;height: 2.6rem;line-height: 2.2rem;vertical-align: unset;padding: 2px;box-sizing: border-box;width: 2rem;text-align: center;background: #94ff98;box-shadow: -1px 2px 4px #000;}
+select#itemSel {max-width: 33.5rem;font-size: 2rem;line-height: 2rem;height: 2.6rem;vertical-align: bottom;border: 3px solid #000;}
+
+div#chooser.nlinput {text-align: left;padding-left: 3rem;background: #b3b396;height: auto;width: 100%;padding: 0.3rem 0 0.3rem 3rem;}
+#chooser input#qty {width: 5rem;margin-left: 0.5rem;text-align: center;vertical-align: bottom;border: 3px solid #000;}
+.itemRow {white-space: nowrap;font-size: 1.4rem;padding-top: 1rem;}
+.itemRow div {display: inline-block;font-size: 1.6rem;}
+.itemRow div.qtyItem {margin-left: 4rem;border-bottom: 1px solid;width: 4rem;text-align: right;}
+.itemRow div.nomeItem {border-bottom: 1px solid;width: 32rem;text-align: left;white-space: pre-line;text-transform: initial;}
+.itemRow div.prezzoItem {display: inline-block;border-bottom: 1px solid #000;width: 6rem;text-align: right;}
+textarea#custItem {display: block;height: 4rem;font-size: 1rem;border: 3px solid #000;margin-top: 0.2rem;}
+input#prezzo {width: 6rem;margin-left: 0.5rem;text-align: right;vertical-align: bottom;border: 3px solid #000;}
+.btn.removeClass {height: 2.2rem;line-height: 2rem;border-radius: 1rem;background: #f88;}
+.nlinput.privacy.mand {margin-top: 2rem;}
+div#chooser > * {box-sizing: border-box;height: 2.5rem;line-height: 2.2rem;font-size: 1.6rem;}
+.selectContainer {display: inline;}
+.totalShip {margin-left: 4rem;text-align: right;width: 44.5rem;font-size: 1.6rem;border-top: 1px solid;margin-top: 3px;border-bottom: 1px solid;}
+
+.totalShip:before {content: 'TOTALE:';margin-right: 4rem;}
+.printBtn, .discardBtn {border: 1px solid #000;margin-top: 0.5rem;padding: 0.5rem;border-radius: 0.5rem;box-shadow: 1px 1px 1px #000;cursor: pointer;}

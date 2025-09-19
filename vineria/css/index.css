@@ -1,0 +1,265 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+html{font-size:2vmin} 
+* {
+    -webkit-tap-highlight-color: rgb(255 255 255); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
+}
+
+body {
+    -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
+    -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
+    -webkit-user-select: none;                  /* prevent copy paste, to allow, change 'none' to 'text' */
+    background: #ffffff;
+    /* background-image:linear-gradient(to bottom, #A7A7A7 0%, #E4E4E4 51%); */
+    font-family: system-ui, -apple-system, -apple-system-font, 'Segoe UI', 'Roboto', sans-serif;
+    font-size:12px;
+    height:100vh;
+    margin:0px;
+    padding:0px;
+    /* Padding to avoid the "unsafe" areas behind notches in the screen */
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    text-transform:uppercase;
+    width:100%;
+}
+
+/* Portrait layout (default) */
+.app {
+    background:url(../img/logo.png) no-repeat center top; /* 170px x 200px */
+    position:absolute;             /* position in the center of the screen */
+    left:50%;
+    top:50%;
+    height:50px;                   /* text area height */
+    width:225px;                   /* text area width */
+    text-align:center;
+    padding:180px 0px 0px 0px;     /* image height is 200px (bottom 20px are overlapped with text) */
+    margin:-115px 0px 0px -112px;  /* offset vertical: half of image height and text area height */
+                                   /* offset horizontal: half of text area width */
+}
+
+/* Landscape layout (with min-width) */
+@media screen and (min-aspect-ratio: 1/1) and (min-width:400px) {
+    .app {
+        background-position:left center;
+        padding:75px 0px 75px 170px;  /* padding-top + padding-bottom + text area = image height */
+        margin:-90px 0px 0px -198px;  /* offset vertical: half of image height */
+                                      /* offset horizontal: half of image width and text area width */
+    }
+}
+
+h1 {
+    font-size:24px;
+    font-weight:normal;
+    margin:0px;
+    overflow:visible;
+    padding:0px;
+    text-align:center;
+}
+
+.event {
+    border-radius:4px;
+    color:#FFFFFF;
+    font-size:12px;
+    margin:0px 30px;
+    padding:2px 0px;
+}
+
+.event.listening {
+    background-color:#333333;
+    display:block;
+}
+
+.event.received {
+    background-color:#4B946A;
+    display:none;
+}
+
+#deviceready.ready .event.listening { display: none; }
+#deviceready.ready .event.received { display: block; }
+
+@keyframes fade {
+    from { opacity: 1.0; }
+    50% { opacity: 0.4; }
+    to { opacity: 1.0; }
+}
+
+.blink {
+    animation:fade 3000ms infinite;
+    -webkit-animation:fade 3000ms infinite;
+}
+
+
+
+.nlinput input,.nlinput select {
+    font-size: 2rem;
+    width: 40rem;
+    box-sizing: border-box;
+}
+.nlinput textarea {
+    font-size: 0.8rem;
+    width: 40rem;
+    height: 29rem;
+    box-sizing: border-box;
+}
+.nlinput {
+    content: '*';
+    font-size: 2rem;
+    display: block;
+    margin: 0.4rem auto;
+    width: 42rem;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-align: right;
+    position: relative;
+}
+
+.mand:before {
+    content: '*';
+    font-size: 3.5rem;
+    width: 2rem;
+    box-sizing: border-box;
+position: absolute;left: 0;/* border: 1px solid; */line-height: 3.4rem;vertical-align: bottom;display: block;height: 2.6rem;}
+.mand.alert:before {
+    
+color: #f00;  
+animation: blink 1s infinite;
+}
+@keyframes blink{
+  0% {
+    color:  #f00;
+  }
+  80% {
+    color: #f000;
+  }
+}
+
+div#savecmd {
+    font-size: 2rem;
+    display: block;
+    margin: auto;
+    border:1px solid #000;
+    width: 33rem;
+    padding: 0.5rem;
+    text-align: center;
+    background: #fff;
+    border-radius: 0.5rem;
+    white-space: normal;
+    margin: 1rem auto;
+}
+div.ui-datepicker{
+ font-size:1.5rem;
+}
+label {
+    font-size: 1.2rem;
+    white-space: normal;
+    display: inline-block;
+    width: 33rem;
+}.nlinput.mand {}
+
+
+
+.nlinput input#privacy {
+    width: 1rem;
+    font-size: 2rem;
+}
+.pprivl {
+    font-size: 1.4rem;
+    border: 1px solid #000;
+    width: 40rem;
+    margin-left: 2rem;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    text-align: center;
+    font-weight: bold;
+    background: aliceblue;
+    padding: 0.4rem;
+    box-sizing: border-box;
+}
+input[type=checkbox]
+{
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(3); /* IE */
+  -moz-transform: scale(3); /* FF */
+  -webkit-transform: scale(3); /* Safari and Chrome */
+  -o-transform: scale(3); /* Opera */
+  transform: scale(3);
+  height: 2.5rem;
+  margin-left: 0rem;
+  position: absolute;
+  left: 2rem;
+  transform-origin: left;
+}
+.overlay{
+    display:block;
+    position:fixed;
+    z-index:10;
+    background:#999;
+    width: 100%;
+    height:  100%;
+    background: url('../img/logo_ercolani.png');
+    background-color: #fff;
+    background-size: 60% auto;
+    background-repeat: no-repeat;
+    background-position: center 18rem;
+    }
+.overlaypost{
+    display:none;
+    position:fixed;
+    z-index:10;
+    background:#999;
+    width: 100%;
+    height:  100%;
+background: url('../img/logo_ercolani.png');background-color: #fff;background-size: 60% auto;background-repeat: no-repeat;background-position: center;}
+
+
+.overlaytxt {position: absolute;bottom: 0;width: 100%;text-align: center;margin-bottom: 4rem;font-size: 2rem;}
+.header{
+  position: relative;
+  background: url('../img/logo_ercolani.png');
+  background-color: #fff0;
+  background-size: auto 18vmin;
+  background-repeat: no-repeat;
+  background-position: center;
+  top: 5px;
+  height: 23vmin;
+  width: 100%;
+  }
+
+.overlaytxt b {font-size: 2.5rem;display: block;/* transform: scaleX(0.5); */width: 100%;/* transform-origin: center; */white-space: nowrap;text-align: center;margin-bottom: 5rem;}
+.overlaypost .overlaytxt b {font-size: 2.1rem;display: block;transform: scaleX(1.2);width: 100%;transform-origin: center;white-space: nowrap;}
+
+span.discount {display: block;/* transform: scaleX(2); */font-size: 1.1rem;}
+span.goon {display: block;font-size: 3rem;border: 1px solid #97203e;width: 33rem;margin: auto;box-shadow: 1px 1px 4px 0px #97203e7d;color: #97203e;}
+.overlaypost span.goon {display: block;transform: scaleX(1);font-size: 0.8rem;margin-top: 0.4rem;}
+
+input.alert:after {
+  content:' ';
+  background: #ff9595;}
+.pendingbadge {position: fixed;/* border: 1px solid #000; */z-index: 100;right: 1rem;top: 1rem;width: 2rem;height: 2rem;border-radius: 1rem;line-height: 2rem;text-align: center;font-size: 1.2rem;background: #ffdc55;box-shadow: -1px 1px 4px 0px #000;display: none;}
+span.discount,span.discount i{
+    font-size: 2rem;
+    display: block;
+font-weight: bold;}
+
+.discount small {
+    font-size: 1.6rem;
+    display: block;
+    text-align: center;
+    margin: 0.5rem 1rem 7rem;
+font-weight: normal;}

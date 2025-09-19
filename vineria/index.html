@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <!--
+        Customize this policy to fit your own app's needs. For more guidance, see:
+            https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+        Some notes:
+            * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+                * Enable inline JS: add 'unsafe-inline' to default-src
+        -->
+       
+        <meta http-equiv="Content-Security-Policy" content="default-src * gap: ws: https://ssl.gstatic.com;style-src * 'unsafe-inline' 'self' data: blob:;script-src * 'unsafe-inline' 'unsafe-eval' data: blob:;img-src * data: 'unsafe-inline' 'self' content:">
+        <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+        <link rel="stylesheet" href="css/jquery-ui.min.css">
+        <link rel="stylesheet" href="css/index.css?t=5">
+        <title>vineria Toscana</title>
+    </head>
+    <body>
+        <div class="pendingbadge">0</div>
+        <div class="overlay"><div class="overlaytxt"><span class="payoff"><b>SUBSCRIBE TO OUR NEWSLETTER<br><i>ISCRIVITI ALLA NOSTRA NEWSLETTER</i></b></span><span class="discount">10% discount if you buy from the shop!<small>Show the discount  coupon at check out and a 10% off will be applied on every product available in the shop!</small><i>Sconto 10% per acquisti nel nostro shop!<small>Mostra alla cassa il coupon sconto che riceverai per mail e otterrai il 10% di sconto sull’acquisto di tutti i prodotti disponibili nel nostro shop!</small></i></span><span class="goon">touch the screen<br><i>tocca lo schermo</i></span></div></div>
+        
+        <div class="overlaypost"><div class="overlaytxt"><span class="payoff"><b>THANK YOU - <i>GRAZIE</i></b></span><span class="discount">Please check your email</span><span class="discount"><i>Controlla il tua account email</i></span><span class="goon">touch the screen or wait few seconds to register another email</span><span class="goon"><i>attendi qualche istante o tocca lo schermo per effettuare una nuova registazione</i></span></div></div>
+        <div class="header">&nbsp;</div>
+        <h1>SUBSCRIBE OUR NEWSLETTER</h1>
+        <form id="mailSubscribe">
+            <div class="nlinput email mand">
+                <input type="email" id="email" placeholder="Email" />
+            </div>
+            <div class="nlinput nome mand">
+                <input type=text id="nome" placeholder="First Name / Nome" />
+            </div>
+            <div class="nlinput cognome mand">
+                <input type=text id="cognome" placeholder="Second Name / Cognome" />
+            </div>
+            <div class="nlinput nazione mand">
+                <select id=nazione>
+                </select>    
+            </div>
+            <div class="nlinput">
+                <input type=tel id="tel" placeholder="Phone N./ Num. Telefonico" />
+            </div>
+            <div class="nlinput">
+                <input type="text" id="nascita" placeholder="Birth date / Data di Nascita" min="1920-01-01" max="2010-01-01">
+            </div>
+            <div class="nlinput privacy mand">
+                <label for="privacy">I am aware of the privacy policy / Ho letto e approvato l'informativa sulla privacy</label>  
+                <input type=checkbox id="privacy" />
+                <div class="pprivl">Switch Language / Cambia lingua</div>
+                <textarea readonly id="prvctxtita">INFORMATIVA CLIENTI SUL TRATTAMENTO DEI DATI PERSONALI
+
+Ai sensi del Regolamento UE 2016/679
+
+Questa informativa si riferisce ai dati personali oggetto di trattamento nell’ambito dello svolgimento dell’attività  svolta da LA VINERIA DI MONTEPULCIANO  che intende, mediante questo documento, descrivere le sue modalità di gestione, in ambito del trattamento dei dati personali degli Interessati.
+
+La presenta informativa è resa ai sensi dell’art. 13 del Regolamento UE 2016/679 del 27 aprile 2016.
+
+Per Trattamento dei Dati Personali si intende qualsiasi operazione o insieme di operazioni, compiute con o senza l’ausilio  di  processi  automatizzati  e  applicate  a  dati  personali  o  insiemi  di  dati  personali,  come  la  raccolta,  la registrazione,  l’organizzazione,  la  strutturazione,  la  conservazione,  l’adattamento  o  la  modifica,  l’estrazione,  la consultazione,  l’uso,  la  comunicazione  mediante  trasmissione,  diffusione  o  qualsiasi  altra  forma  di  messa  a disposizione, il raffronto o l’interconnessione, la limitazione, la cancellazione o la distruzione.
+
+Categorie di Dati Personali trattati
+AZIENDA AGRICOLA ERCOLANI  tratterà i seguenti Dati Personali forniti dall’Interessato:
+
+Dati Anagrafici e Identificativi (tra i quali nome, cognome, data di nascita, sesso, codice fiscale)
+Dati di Contatto (tra i quali telefono, email, indirizzo)
+Finalità del Trattamento
+I Dati Personali da Lei messi a disposizione di AZIENDA AGRICOLA ERCOLANI, verranno trattati per rispondere a specifiche finalità strumentali alle attività aziendali, quali finalità istituzionali, organizzative, connesse agli obblighi previsti da leggi e regolamenti statali, regionali e comunitari quali:
+
+a) adempimenti amministrativi e contabili;
+b) per l’adempimento degli obblighi legali e contrattuali, connessi al contratto;
+c) eventuale gestione del contenzioso;
+d) per ulteriori casi previsti dalla normativa vigente,
+e) invio di Newsletter (base giuridica art.6 comma 1 lett. a) solo su esplicito e specifico consenso in allegato all’informativa);
+f) invio di comunicazioni commerciali relativi a promozioni, sconti, offerte.
+g) invio mail per eventi organizzati da LA VINERIA DI MONTEPULCIANO (base giuridica art.6 comma 1 lett. a) solo su esplicito e specifico consenso in allegato all’informativa);
+Le ricordiamo che, con riferimento alle finalità evidenziate ai punti da a) a d) il conferimento dei Suoi dati personali  è  obbligatorio.  Un  Suo  eventuale  rifiuto  e/o  il  conferimento  di  informazioni  inesatte  e/o incomplete impedirebbe l’esecuzione del contratto e la sua mancata prosecuzione.
+
+In merito alle finalità di cui ai punti e) e f) il conferimento dei dati e relativo consenso al trattamento ha natura volontaria.
+
+Modalità del Trattamento
+Il  trattamento  dei  Suoi  Dati  Personali  verrà  effettuato  mediante  idonei  strumenti  cartacei,  elettronici  e/o telematici, solo ed esclusivamente per le finalità riportate al paragrafo 2 e in modo da garantire la sicurezza e riservatezza dei Dati stessi.
+
+Destinatari o Categorie di destinatari dei Dati Personali (Responsabili Esterni del Trattamento)
+Verranno a conoscenza dei Suoi Dati Personali gli Incaricati del trattamento dei Dati Personali nominati da LA VINERIA DI MONTEPULCIANO nell’esercizio delle loro funzioni.
+
+I Suoi Dati Personali potranno essere comunicati a fornitori, appaltatori, istituti bancari e/o assicurativi ad eventuali  soggetti  esterni  che  forniscano  a  LA VINERIA DI MONTEPULCIANO prestazioni  o  servizi  strumentali  alle  finalità indicate nel precedente par. 2 legate ai seguenti aspetti:
+
+LA VINERIA DI MONTEPULCIANO S.R.L.
+
+Via di Gracciano nel Corso, 101
+53045 Montepulciano
+P.I. 01551730524
+Tel.: +39 0578850153
+Email: vineriatoscana@pec.it
+ 
+
+Attività istituzionali
+Manutenzione e sviluppo della rete e infrastruttura informatica
+Consulenza
+Elaborazioni e adempimenti: amministrativi, contabili e fiscali
+Legale
+Qualora  si  verificasse  la  necessità  di  comunicare  i  dati  ad  altri  soggetti  o  per  un  uso  diverso  da  quelli sopramenzionati verrà richiesta esplicita e specifica autorizzazione.
+
+L’elenco  completo  dei  Responsabili  Esterni  del  Trattamento  dei  Dati  Personali  di  LA VINERIA DI MONTEPULCIANO è disponibile su richiesta (vedi dati di contatto, par. 7).
+
+Durata del trattamento e criteri utilizzati per la conservazione dei Dati Personali
+5.1. Durata
+
+Le finalità di cui al paragrafo 2 lettere da a) a d) “Finalità del Trattamento” della presente informativa, i Suoi
+
+Dati Personali saranno trattati per 10 anni.
+
+Per le finalità di cui al paragrafo 2 lettere e), f) e g) i suoi dati personali saranno trattati per 2 anni.
+
+5.2. Conservazione
+
+I dati saranno conservati in modalità sia elettronica che cartacea, le tempistiche di conservazione sono (su
+
+finalità al par.2):
+
+–  Alle finalità da a), b), c) e d) la conservazione è pari a 10 anni;
+
+–  Alle finalità e) e f) la conservazione è massimo di 24 mesi.
+
+Diritti dell’Interessato
+Ai sensi dell’artt. 7, 15-22 e 77 del Regolamento UE 2016/679 l’interessato ha diritto a:
+
+Revocare il consenso precedentemente prestato, senza pregiudicare la liceità del trattamento basato
+sul consenso prima della revoca (per le finalità a par. 2 lettera e), f)
+
+Ottenere l’accesso a tutti i propri dati personali detenuti da LA VINERIA DI MONTEPULCIANO
+Ottenere l’accesso a tutte le informazioni riportate nel presente documento
+Ottenere il  diritto  alla  rettifica,  integrazione,  cancellazione  dei  dati  personali  (diritto  all’oblio)  o
+limitazione del trattamento dei dati personali
+
+Ottenere il diritto alla portabilità dei dati
+Diritto di opposizione
+Diritto di proporre reclamo a un’autorità di controllo
+Per l’esercizio dei diritti sopra riportati può contattare le figure designate tramite i contatti riportati al par. 7; a  tale richiesta sarà fornito idoneo riscontro secondo quanto previsto dal GDPR.
+
+Titolare del trattamento
+–  Il Titolare del trattamento dei Dati è
+
+LA VINERIA DI MONTEPULCIANO s.r.l.
+Via di Gracciano nel Corso, 101
+53045 Montepulciano (SI)
+
+nella  persona del  Presidente in  carica e  Rappresentante  dell’Impresa Simone Ercolani.
+
+Qualsiasi richiesta relativa ai dati personali trattati potrà essere inviata per posta ordinaria presso la sede legale in Via di Gracciano nel Corso, 101 – 53045 Montepulciano (SI), oppure scrivendo all’indirizzo di posta elettronica vineriatoscana@pec.it .
+
+La presente informativa sarà soggetta ad aggiornamenti ed è disponibile su richiesta secondo le modalità sopra riportate.
+
+Ho letto ed acconsento al trattamento dei miei dati personali come fin qui descritto.</textarea>
+<textarea readonly id="prvctxteng" style="display:none">CUSTOMER INFORMATION ON THE PROCESSING OF PERSONAL DATA
+
+Pursuant to EU Regulation 2016/679
+
+This information refers to the personal data being processed in the performance of the activity carried out by LA VINERIA DI MONTEPULCIANO  which intends, through this document, to describe its management methods, in the context of the processing of personal data of the interested parties.
+
+This information is provided pursuant to art. 13 of EU Regulation 2016/679 of April 27, 2016.
+
+By Processing of Personal Data we mean any operation or set of operations, carried out with or without the aid of automated processes and applied to personal data or sets of personal data, such as the collection, registration, organization, structuring, storage, adaptation or modification, extraction, consultation, use, communication by transmission, dissemination or any other form of making available, comparison or interconnection, limitation, cancellation or destruction .
+
+Categories of Personal Data processed
+LA VINERIA DI MONTEPULCIANO  will process the following Personal Data provided by the interested party:
+
+Personal and Identification Data (including name, surname, date of birth, gender, tax code)
+Contact data (including telephone, email, address)
+Purpose of the treatment
+The Personal Data you have made available to LA VINERIA DI MONTEPULCIANO, will be processed to respond to specific purposes instrumental to corporate activities, such as institutional, organizational purposes, connected to the obligations established by state, regional and community laws and regulations such as:
+
+a) administrative and accounting obligations;
+b) for the fulfillment of the legal and contractual obligations connected to the contract;
+c) any dispute management;
+d) for further cases envisaged by current legislation,
+e) sending of newsletters (legal basis art.6 paragraph 1 letter a) only with explicit and specific consent attached to the information);
+f) sending commercial communications relating to promotions, discounts, offers.
+g) sending emails for events organized by LA VINERIA DI MONTEPULCIANO (legal basis Article 6 paragraph 1 letter a) only upon explicit and specific consent attached to the information);
+We remind you that, with reference to the purposes highlighted in points a) to d), the provision of your personal data is mandatory. Your refusal and / or the provision of incorrect and / or incomplete information would prevent the execution of the contract and its failure to continue.
+
+With regard to the purposes referred to in points e) and f), the provision of data and related consent to the processing is voluntary in nature.
+
+Treatment Mode
+The processing of your Personal Data will be carried out using suitable paper, electronic and / or telematic tools, only and exclusively for the purposes indicated in paragraph 2 and in order to guarantee the security and confidentiality of the Data.
+
+Recipients or categories of recipients of Personal Data (External Data Processors)
+The Personal Data Processors appointed by LA VINERIA DI MONTEPULCIANO will be aware of your Personal Data in the exercise of their functions.
+
+Your Personal Data may be disclosed to suppliers, contractors, banking and / or insurance institutions to any external parties that provide to LA VINERIA DI MONTEPULCIANO performance or services instrumental to the purposes indicated in the previous par. 2 related to the following aspects:
+
+LA VINERIA DI MONTEPULCIANO
+
+Via di Gracciano nel Corso, 101
+53045 Montepulciano
+VAT IT01551730524
+Phone: +39 0578850153
+E-mail: vineriatoscana@pec.it
+ 
+
+Institutional activities
+Maintenance and development of the network and IT infrastructure
+Consulting
+Elaborations and fulfilments: administrative, accounting and fiscal
+Legal
+Should there be the need to communicate the data to other subjects or for a use other than those mentioned above, explicit and specific authorization will be requested.
+
+The complete list of external managers of the processing of personal data of LA VINERIA DI MONTEPULCIANO it is available upon request (see contact details, par. 7).
+
+Duration of treatment and criteria used for the storage of Personal Data
+5.1. Duration
+
+The purposes referred to in paragraph 2 letters a) to d) "Purpose of the processing" of this information, your
+
+Personal data will be processed for 10 years.
+
+For the purposes referred to in paragraph 2 letters e), f) and g) your personal data will be processed for 2 years.
+
+5.2. storage
+
+The data will be stored both electronically and on paper, the storage times are (on
+
+purpose in paragraph 2):
+
+- For purposes a), b), c) and d), the conservation is 10 years;
+
+- For purposes e) and f), storage is up to 24 months.
+
+Rights of the interested party
+Pursuant to art. 7, 15-22 and 77 of EU Regulation 2016/679 the interested party has the right to:
+
+Revoke the consent previously given, without prejudice to the lawfulness of the treatment based
+on consent before revocation (for the purposes in par. 2 letter e), f)
+
+Obtain access to all of your personal data held by LA VINERIA DI MONTEPULCIANO
+Get access to all the information contained in this document
+Obtain the right to rectification, integration, cancellation of personal data (right to be forgotten) or
+limitation of the processing of personal data
+
+Get the right to data portability
+Right to object
+Right to lodge a complaint with a supervisory authority
+To exercise the above rights, you can contact the designated figures through the contacts listed in par. 7; suitable feedback will be provided to this request in accordance with the provisions of the GDPR.
+
+Data controller
+- The Data Controller is
+
+LA VINERIA DI MONTEPULCIANO S.R.L.
+Via Gracciano, 101
+53045 Montepulciano (SI)
+Email: vineriatoscana@pec.it
+
+in the person of the Chairman in office and Company Representative Simone Ercolani.
+
+Any request relating to the personal data processed can be sent by ordinary mail to the registered office in Via di Gracciano, 101 - 53045 Montepulciano (SI), or by writing to the e-mail address vineriatoscana@pec.it .
+
+This information will be subject to updates and is available on request in the manner indicated above.
+
+I have read and consent to the processing of my personal data as described above.</textarea>
+            </div>
+            <div class="nlinput" id="savecmd">
+                subscribe / iscriviti adesso
+            </div>
+        </form>
+        <div class="app" style="display: none">
+            
+            <div id="deviceready" class="blink">
+                <p class="event listening">Connecting to Device</p>
+                <p class="event received">Device is Ready</p>
+            </div>
+        </div>
+        <script src="js/jquery-v3.6.0.min.js"></script>
+        <script src="js/jquery-ui.min.js"></script>
+        <script src="js/jquery.md5.js"></script>
+        <!--script src="cordova.js"></script-->
+        <script src="../config/environment-config.php"></script>
+        <script src="js/index.js"></script>
+    </body>
+</html>

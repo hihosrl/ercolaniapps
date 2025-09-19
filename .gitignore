@@ -1,0 +1,32 @@
+# PDF files (generated content)
+pdf/*.pdf
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Backup files
+*.bak
+*~
+
+# Database connection files (if any contain sensitive info)
+# Uncomment if needed:
+# config/database.php
