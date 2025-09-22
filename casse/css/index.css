@@ -361,7 +361,7 @@ background: url('../img/logo_ercolani.png');background-color: #ffffff;background
 .overlaypost{
     
     display: none;position:fixed;
-    z-index:10;
+    z-index:100;
     background:#999;
     width: 100%;
     height:  100%;
