@@ -1,0 +1,13 @@
+{
+  "name": "hihosrl/ercolaniapps",
+  "description": "Ercolani Apps - Shipment module and subscriptions",
+  "type": "project",
+  "require": {
+    "phpmailer/phpmailer": "^6.9"
+  },
+  "autoload": {
+    "psr-4": {
+      "Ercolani\\": "src/"
+    }
+  }
+}

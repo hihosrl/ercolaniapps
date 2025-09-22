@@ -73,6 +73,33 @@ switch($_REQUEST['cmd']){
 	}
 	exit;
 	break;
+  case 'searchCustomersByName':
+	if ($_REQUEST['query'] && strlen(trim($_REQUEST['query'])) >= 3){
+		$query = mysql_escape_string(trim($_REQUEST['query']));
+		// Search in both nome (first name) and cognome (last name) fields
+		$q = "SELECT DISTINCT nome, cognome, email, nazione FROM shipments 
+			  WHERE (nome LIKE '%$query%' OR cognome LIKE '%$query%') 
+			  ORDER BY nome ASC, cognome ASC LIMIT 10";
+		$r = mysql_query($q);
+		$customers = array();
+		if ($r && mysql_num_rows($r) > 0) {
+			while($row = mysql_fetch_assoc($r)) {
+				$customers[] = array(
+					'nome' => $row['nome'],
+					'cognome' => $row['cognome'],
+					'email' => $row['email'],
+					'nazione' => $row['nazione']
+				);
+			}
+			echo json_encode(array('status' => 'found', 'customers' => $customers));
+		} else {
+			echo json_encode(array('status' => 'not_found', 'customers' => array()));
+		}
+	} else {
+		echo json_encode(array('status' => 'invalid_query', 'customers' => array()));
+	}
+	exit;
+	break;
 	case 'markViewed':
 	if ($_REQUEST['pdf']!=''){
 		if (mysql_query("update pdf set is_new='0' where shipment_id='{$_REQUEST['pdf']}'")){
@@ -104,16 +131,16 @@ switch($_REQUEST['cmd']){
   case 'insertData':
   $destpath=(dirname(__FILE__)).'/pdf/';
   //print_r($_REQUEST);
-  $q="insert into shipments values('','BT','".mysql_escape_string($_REQUEST['nome'])."','".mysql_escape_string($_REQUEST['cognome'])."','".mysql_escape_string($_REQUEST['indirizzo'])."','".mysql_escape_string($_REQUEST['citta'])."','".mysql_escape_string($_REQUEST['cap'])."','".mysql_escape_string($_REQUEST['nazione'])."','".mysql_escape_string($_REQUEST['tel'])."','".mysql_escape_string($_REQUEST['email'])."','".mysql_escape_string($_REQUEST['prov'])."','".mysql_escape_string($_REQUEST['nascita'])."',NOW())";
+  $q="INSERT INTO shipments (`id`,`track`,`nome`,`cognome`,`indirizzo`,`citta`,`cap`,`nazione`,`telefono`,`email`,`prov`,`nascita`,`created_at`) VALUES (NULL,'BT','".mysql_escape_string($_REQUEST['nome'])."','".mysql_escape_string($_REQUEST['cognome'])."','".mysql_escape_string($_REQUEST['indirizzo'])."','".mysql_escape_string($_REQUEST['citta'])."','".mysql_escape_string($_REQUEST['cap'])."','".mysql_escape_string($_REQUEST['nazione'])."','".mysql_escape_string($_REQUEST['tel'])."','".mysql_escape_string($_REQUEST['email'])."','".mysql_escape_string($_REQUEST['prov'])."','".mysql_escape_string($_REQUEST['nascita'])."',NOW())";
   //echo $q;
   if ($r=mysql_query($q)){
 	$id=mysql_insert_id();
 	foreach($_REQUEST['items'] as $item){
-		if ($item['id']=='custom'){
-			$r=mysql_query("insert into catalog set custom=1, descrizione='".$item['desc']."'");
-			$item['id']=mysql_insert_id();
-		}
-		$q2="insert into shipdetails values ('',$id,'".mysql_escape_string($item['id'])."','".mysql_escape_string($item['qty'])."','".mysql_escape_string($item['price'])."')";
+		        if ($item['id']=='custom'){
+            $r=mysql_query("INSERT INTO catalog SET custom=1, valore='-', descrizione='".$item['desc']."'");
+            $item['id']=mysql_insert_id();
+        }
+		$q2="INSERT INTO shipdetails (`id`,`shipment_id`,`catalog_id`,`qty`,`price`) VALUES (NULL,'".$id."','".mysql_escape_string($item['id'])."','".mysql_escape_string($item['qty'])."','".mysql_escape_string($item['price'])."')";
 		if ($r2=mysql_query($q2)){
 			
 		}else{
@@ -123,22 +150,67 @@ switch($_REQUEST['cmd']){
   }else{
 	echo "errore query main";
   }
-  //eseguo la creazione del pdf
-  //./wkhtmltopdf.sh 'http://ercolani.hiho.it/ercolani_casse.php?cmd=createPDF&shipment_id=4' /www/testercolani.pdf
-  $execcmd="/bin/bash -c \"wkhtmltopdf.sh '".$API_BASE_URL."/ercolani_casse.php?cmd=createPDF&shipment_id=".$id."' ".$destpath."er_".str_pad($id, 5, '0', STR_PAD_LEFT).".pdf\"";
-  //echo $execcmd;
-  exec($execcmd, $output, $retval);
-	//echo "Returned with status $retval and output:\n";
-	//print_r($output);
-	if ($retval==0){
-		// eseguo la insert nel db
-		$q="INSERT INTO `pdf` (`shipment_id`, `pdf`, `is_new`, `creato`, `cancellato`) VALUES ('".$id."', '".$API_BASE_URL."/pdf/er_".str_pad($id, 5, '0', STR_PAD_LEFT).".pdf', 1, '".date('Y-m-d H:i:s')."', '0000-00-00 00:00:00')";
-			mysql_query($q) or die(mysql_error());
+  // eseguo la creazione del pdf (robusto)
+  // Ensure destination directory exists and is writable
+  if (!is_dir($destpath)) {
+    @mkdir($destpath, 0775, true);
+  }
+  $pdfFile = $destpath."er_".str_pad($id, 5, '0', STR_PAD_LEFT).".pdf";
+  $htmlUrl = $API_BASE_URL."/ercolani_casse.php?cmd=createPDF&shipment_id=".$id;
+  $output = array();
+  $retval = 1;
 
-  		echo json_encode(array('status'=>'ok','pdf'=>$API_BASE_URL."/pdf/er_".str_pad($id, 5, '0', STR_PAD_LEFT).".pdf"));
-			exit;
-	}
-	echo json_encode(array('status'=>'ko','error'=>"errore nella creazione del pdf"));
+  // Try to locate helper script or binary
+  $helperScript = trim(shell_exec('command -v wkhtmltopdf.sh 2>/dev/null'));
+  $wkhtmlBin   = trim(shell_exec('command -v wkhtmltopdf 2>/dev/null'));
+
+  if ($helperScript !== '' && file_exists($helperScript)) {
+    $execcmd = "/bin/bash -c \"".escapeshellcmd($helperScript)." ".escapeshellarg($htmlUrl)." ".escapeshellarg($pdfFile)."\"";
+  } elseif ($wkhtmlBin !== '' && file_exists($wkhtmlBin)) {
+    // Use wkhtmltopdf directly
+    $execcmd = "/bin/bash -c \"".escapeshellarg($wkhtmlBin)." --enable-local-file-access --print-media-type --load-error-handling ignore --disable-smart-shrinking ".escapeshellarg($htmlUrl)." ".escapeshellarg($pdfFile)."\"";
+  } else {
+    $execcmd = '';
+  }
+
+  if ($execcmd !== '') {
+    exec($execcmd, $output, $retval);
+    // Fallback: try localhost URL if first attempt failed (e.g., DNS/SSL issues)
+    if ($retval !== 0) {
+      $output[] = 'Retrying with localhost URL';
+      $htmlUrlLocal = 'http://127.0.0.1/ercolani_casse.php?cmd=createPDF&shipment_id='.$id;
+      if ($helperScript !== '' && file_exists($helperScript)) {
+        $execcmd = "/bin/bash -c \"".escapeshellcmd($helperScript)." ".escapeshellarg($htmlUrlLocal)." ".escapeshellarg($pdfFile)."\"";
+      } elseif ($wkhtmlBin !== '' && file_exists($wkhtmlBin)) {
+        $execcmd = "/bin/bash -c \"".escapeshellarg($wkhtmlBin)." --enable-local-file-access --print-media-type --load-error-handling ignore --disable-smart-shrinking ".escapeshellarg($htmlUrlLocal)." ".escapeshellarg($pdfFile)."\"";
+      }
+      $retryOut = array();
+      $retryCode = 1;
+      exec($execcmd, $retryOut, $retryCode);
+      $output = array_merge($output, $retryOut);
+      $retval = $retryCode;
+    }
+  } else {
+    $output = array('wkhtmltopdf not found in PATH');
+    $retval = 127;
+  }
+
+    if ($retval==0){
+        // eseguo la insert nel db
+        $q="INSERT INTO `pdf` (`shipment_id`, `pdf`, `is_new`, `creato`, `cancellato`) VALUES ('".$id."', '".$API_BASE_URL."/pdf/er_".str_pad($id, 5, '0', STR_PAD_LEFT).".pdf', 1, '".date('Y-m-d H:i:s')."', '1970-01-01 00:00:00')";
+            mysql_query($q) or die(mysql_error());
+
+        echo json_encode(array('status'=>'ok','pdf'=>$API_BASE_URL."/pdf/er_".str_pad($id, 5, '0', STR_PAD_LEFT).".pdf"));
+            exit;
+    }
+    echo json_encode(array(
+      'status'=>'ko',
+      'error'=>"errore nella creazione del pdf",
+      'cmd'=>$execcmd,
+      'retval'=>$retval,
+      'out'=>$output,
+      'pdf_dir'=>array('path'=>$destpath,'exists'=>is_dir($destpath),'writable'=>is_writable($destpath))
+    ));
   exit;
   break;
   case 'createPDF':

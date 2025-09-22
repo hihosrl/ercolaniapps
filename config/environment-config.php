@@ -28,4 +28,6 @@ echo "var CASSE_ENDPOINT = API_BASE_URL + '/ercolani_casse.php';\n";
 echo "var MONITOR_ENDPOINT = API_BASE_URL + '/ercolani_monitor.php';\n";
 echo "var SUBSCRIBE_CANTINE_ENDPOINT = API_BASE_URL + '/ercolani_subscribe_cantine.php';\n";
 echo "var SUBSCRIBE_VINERIA_ENDPOINT = API_BASE_URL + '/ercolani_subscribe_vineria.php';\n";
+echo "\n// Asset version for cache busting\n";
+echo "var ASSET_VERSION = " . time() . ";\n";
 ?>

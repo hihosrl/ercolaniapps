@@ -35,8 +35,21 @@
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
         <meta name="color-scheme" content="light dark">
-        <link rel="stylesheet" href="css/index.css">
-        <link rel="stylesheet" href="css/jquery-ui.min.css">
+        <script src="../config/environment-config.php"></script>
+        <script>
+            (function(){
+                var v = (typeof ASSET_VERSION !== 'undefined') ? ASSET_VERSION : (Date.now());
+                var css1 = document.createElement('link');
+                css1.rel = 'stylesheet';
+                css1.href = 'css/index.css?v=' + v;
+                document.head.appendChild(css1);
+
+                var css2 = document.createElement('link');
+                css2.rel = 'stylesheet';
+                css2.href = 'css/jquery-ui.min.css?v=' + v;
+                document.head.appendChild(css2);
+            })();
+        </script>
   
         <title>Ercolani - Shipment Module Creator by HIHO srl</title>
     </head>
@@ -58,39 +71,44 @@
             </div>
         </div>
         <div class="header">&nbsp;</div>
+        <button id="clearFormBtn" class="clear-form-btn" type="button" title="Clear form">✖ Clear</button>
         <h1>SHIPMENT MODULE / MODULO INVIO</h1>
-        <form id="mailSubscribe">
+        <form id="mailSubscribe" autocomplete="off">
+            <!-- Hidden trap inputs to discourage Chrome autofill -->
+            <input type="text" name="trap_username" autocomplete="username" tabindex="-1" aria-hidden="true" style="position:absolute;opacity:0;height:0;width:0;pointer-events:none;left:-9999px;top:-9999px">
+            <input type="password" name="trap_password" autocomplete="new-password" tabindex="-1" aria-hidden="true" style="position:absolute;opacity:0;height:0;width:0;pointer-events:none;left:-9999px;top:-9999px">
             <div class="nlinput email mand">
-                <input type="email" id="email" placeholder="Email" />
+                <input type="email" id="email" name="eml" placeholder="Email" autocomplete="new-password" spellcheck="false" autocapitalize="off" readonly />
                 <button type="button" id="lookupCustomer" class="lookup-btn" title="Search for existing customer data">🔍</button>
             </div>
             <div class="nlinput nome mand">
-                <input type=text id="nome" placeholder="First Name / Nome" />
+                <input type=text id="nome" name="fn" placeholder="First Name / Nome" autocomplete="new-password" spellcheck="false" autocapitalize="off" readonly />
+                <div id="nameLoadingSpinner" class="name-loading-spinner" aria-hidden="true" style="display:none"></div>
             </div>
             <div class="nlinput cognome mand">
-                <input type=text id="cognome" placeholder="Second Name / Cognome" />
+                <input type=text id="cognome" name="ln" placeholder="Second Name / Cognome" autocomplete="new-password" spellcheck="false" autocapitalize="off" readonly />
             </div>
             <div class="nlinput indirizzo mand">
-                <input type=text id="indirizzo" placeholder="Indirizzo / Address" />    
+                <input type=text id="indirizzo" name="addr" placeholder="Indirizzo / Address" autocomplete="new-password" spellcheck="false" autocapitalize="off" readonly />    
             </div>
             <div class="nlinput citta mand">
-                <input type=text id="citta" placeholder="Città / City" />    
+                <input type=text id="citta" name="cty" placeholder="Città / City" autocomplete="new-password" spellcheck="false" autocapitalize="off" readonly />    
             </div>
             <div class="nlinput cap mand">
-                <input type=text id="cap" placeholder="CAP / Postal Code" />    
+                <input type=text id="cap" name="zipc" placeholder="CAP / Postal Code" autocomplete="new-password" spellcheck="false" autocapitalize="off" readonly />    
             </div>
             <div class="nlinput nazione mand">
-                <select id=nazione>
+                <select id=nazione name="ctry" autocomplete="off">
                 </select>    
             </div>
             <div class="nlinput prov mand">
-                <input type=text id="prov" placeholder="State / Provincia" />
+                <input type=text id="prov" name="stt" placeholder="State / Provincia" autocomplete="new-password" spellcheck="false" autocapitalize="off" readonly />
             </div>
             <div class="nlinput tel mand">
-                <input type=tel id="tel" placeholder="Phone N./ Num. Telefonico" />
+                <input type=tel id="tel" name="phn" placeholder="Phone N./ Num. Telefonico" autocomplete="new-password" spellcheck="false" autocapitalize="off" readonly />
             </div>
             <div class="nlinput nascita mand">
-                <input type="text" id="nascita" placeholder="Birth date / Data di Nascita" min="1920-01-01" max="2010-01-01">
+                <input type="text" id="nascita" name="bday" placeholder="Birth date / Data di Nascita" min="1920-01-01" max="2010-01-01" autocomplete="new-password" readonly>
             </div>
             <div class="itemsContainer">
             </div>	
@@ -318,12 +336,87 @@ I have read and consent to the processing of my personal data as described above
                 <p class="event received">Device is Ready</p>
             </div>
         </div>
-        <script src="js/jquery-v3.6.0.min.js"></script>
-        <script src="js/jquery-ui.min.js"></script>
-        <script src="js/jquery.md5.js"></script>
-        <!--script src="cordova.js"></script-->
-        <script src="../config/environment-config.php"></script>
-        <script src="js/index.js"></script>
+        <script>
+            (function(){
+                var v = (typeof ASSET_VERSION !== 'undefined') ? ASSET_VERSION : (Date.now());
+                function loadScript(src, cb){
+                    var s = document.createElement('script');
+                    s.src = src;
+                    s.async = false;
+                    s.onload = function(){ if (cb) cb(); };
+                    document.body.appendChild(s);
+                }
+                // Ensure strict load order: jQuery -> jQuery UI -> helpers -> app
+                loadScript('js/jquery-v3.6.0.min.js', function(){
+                    loadScript('js/jquery-ui.min.js', function(){
+                        loadScript('js/jquery.md5.js', function(){
+                            //loadScript('cordova.js', function(){
+                                loadScript('js/index.js?v=' + v);
+                            //});
+                        });
+                    });
+                });
+                // Mitigate Chrome autocomplete by randomizing name attributes at runtime
+                document.addEventListener('DOMContentLoaded', function(){
+                    var ids = ['email','nome','cognome','indirizzo','citta','cap','nazione','prov','tel','nascita'];
+                    var token = Math.random().toString(36).slice(2);
+                    ids.forEach(function(id){
+                        var el = document.getElementById(id);
+                        if (!el) return;
+                        try {
+                            // preserve original name in data attribute
+                            if (!el.getAttribute('data-orig-name') && el.name) el.setAttribute('data-orig-name', el.name);
+                            el.name = (el.getAttribute('data-orig-name') || id) + '_' + token;
+                            el.setAttribute('autocomplete','new-password');
+                            el.setAttribute('aria-autocomplete','none');
+                            el.setAttribute('autocorrect','off');
+                            el.setAttribute('autocapitalize','off');
+                            el.setAttribute('spellcheck','false');
+                        } catch(e){}
+                    });
+
+                    // On focus, further discourage Chrome by briefly toggling readonly and randomizing autocomplete token
+                    ids.forEach(function(id){
+                        var el = document.getElementById(id);
+                        if (!el) return;
+                        var handler = function(){
+                            try {
+                                var t = Math.random().toString(36).slice(2);
+                                el.setAttribute('autocomplete', 'nope-' + t);
+                                // brief readonly toggle to suppress autofill popup
+                                var wasReadOnly = el.hasAttribute('readonly');
+                                el.setAttribute('readonly', 'readonly');
+                                setTimeout(function(){
+                                    if (!wasReadOnly) el.removeAttribute('readonly');
+                                }, 60);
+                            } catch(e){}
+                        };
+                        el.addEventListener('focus', handler, { once: false });
+                        el.addEventListener('mousedown', function(){
+                            // ensure user can type/click immediately
+                            if (el.hasAttribute('readonly')) el.removeAttribute('readonly');
+                        });
+                        el.addEventListener('touchstart', function(){
+                            if (el.hasAttribute('readonly')) el.removeAttribute('readonly');
+                        });
+                        el.addEventListener('click', function(){
+                            if (el.hasAttribute('readonly')) el.removeAttribute('readonly');
+                        });
+                        el.addEventListener('keydown', function(){
+                            if (el.hasAttribute('readonly')) el.removeAttribute('readonly');
+                        });
+                        // Special case: open datepicker on click even if readonly was set
+                        if (id === 'nascita') {
+                            el.addEventListener('click', function(){
+                                if (typeof $ === 'function' && typeof $(el).datepicker === 'function') {
+                                    $(el).datepicker('show');
+                                }
+                            });
+                        }
+                    });
+                });
+            })();
+        </script>
         
     </body>
 </html>

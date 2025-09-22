@@ -114,12 +114,14 @@ switch (strtolower($_REQUEST['nazione'])) {
 $emailsplit=explode('@',$_REQUEST['email']);
 $nascitasplit=explode('/',$_REQUEST['nascita']); 
   $q="INSERT INTO `letterit_abonnenten` (`BID`, `Email`, `domain`, `Datum`, `Option1`, `Option2`, `Option3`, `Option4`, `Code`, `Abmeldezeit`, `Status`, `IP`, `note`) VALUES
-(212, '{$_REQUEST['email']}', '{$emailsplit[1]}', ".time().", '{$_REQUEST['nome']} {$_REQUEST['cognome']}', '{$nascitasplit[1]}', '', '{$_REQUEST['tel']}', '', 0, 1, '{$_SERVER['REMOTE_ADDR']}', 'reg. da cantina ercolani')"; 
+(212, '{$_REQUEST['email']}', '{$emailsplit[1]}', ".time().", '{$_REQUEST['nome']} {$_REQUEST['cognome']}', '{$nascitasplit[1]}', '', '{$_REQUEST['tel']}', '', 0, 1, '{$_SERVER['REMOTE_ADDR']}', 'reg. da cantina ercolani')
+ON DUPLICATE KEY UPDATE `domain`=VALUES(`domain`), `Option1`=VALUES(`Option1`), `Option2`=VALUES(`Option2`), `Option4`=VALUES(`Option4`), `Status`=VALUES(`Status`), `note`=VALUES(`note`)"; 
   $_REQUEST['query']=$q;
   if($r=mysql_query($q)){
     $_REQUEST['esito']='ok';
     $q2="INSERT INTO `letterit_sottoliste_email` (`BID`, `email`, `sottoliste`, `note`) VALUES
-(212, '{$_REQUEST['email']}', '".implode(',',$aSL)."', '')";
+(212, '{$_REQUEST['email']}', '".implode(',',$aSL)."', '')
+ON DUPLICATE KEY UPDATE `sottoliste`=VALUES(`sottoliste`)";
     $_REQUEST['query2']=$q2;  
     if($r=mysql_query($q2)){
       $_REQUEST['esito2']='ok';
@@ -136,16 +138,45 @@ if ($_REQUEST['esito']=='ok'){
       $aMailsContent['en']['html']="<p>Thank you for subscribing to the newsletter of the <b>Azienda Agricola - Cantine Ercolani!</b><br>Use this coupon code to get a 10% discount on your first online purchase!<br><br><b>newsletter10</b></p>";
       
 
-      require_once('/www/turismo/include_turismo/classi/PHPMailer-master/class.phpmailer.php');
-        $mail = new PHPMailer();
+      // Prefer Composer autoload; fallback to local/global legacy library; else native mail()
+      $phpmailer_loaded = false;
+      $phpmailer_namespaced = false;
+      $from='ercolani.wineclubservice@hiho.it';
+      $fromName='Azienda Agricola Ercolani Wine Club';
+
+      // Try Composer autoload
+      $composerAutoload = __DIR__ . '/vendor/autoload.php';
+      if (!file_exists($composerAutoload)) {
+          // try project root
+          $composerAutoload = __DIR__ . '/vendor/autoload.php';
+      }
+      if (file_exists($composerAutoload)) {
+          require_once $composerAutoload;
+          $phpmailer_loaded = class_exists('PHPMailer\\PHPMailer\\PHPMailer');
+          $phpmailer_namespaced = $phpmailer_loaded;
+      }
+      // Fallback to local legacy include
+      if (!$phpmailer_loaded) {
+          $localPhpMailer = __DIR__ . '/lib/PHPMailer-master/class.phpmailer.php';
+          if (file_exists($localPhpMailer)) {
+              require_once($localPhpMailer);
+              $phpmailer_loaded = class_exists('PHPMailer');
+          }
+      }
+      // Fallback to global legacy include
+      if (!$phpmailer_loaded && file_exists('/www/turismo/include_turismo/classi/PHPMailer-master/class.phpmailer.php')) {
+          require_once('/www/turismo/include_turismo/classi/PHPMailer-master/class.phpmailer.php');
+          $phpmailer_loaded = class_exists('PHPMailer');
+      }
+
+      if ($phpmailer_loaded) {
+        $mail = $phpmailer_namespaced ? new \PHPMailer\PHPMailer\PHPMailer(true) : new PHPMailer();
         $mail->CharSet = 'UTF-8';
-        $from='ercolani.wineclubservice@hiho.it';
         $forcefrom=0;
         if ($forcefrom && $from!='')
             $mail->From = $from;
         else    
             $mail->From = 'www-data@cloud01.hiho.it';
-        $fromName='Azienda Agricola Ercolani Wine Club';
         $mail->FromName = $fromName;
         $mail->AddAddress($_REQUEST['email']);
 
@@ -173,7 +204,7 @@ if ($_REQUEST['esito']=='ok'){
         $mail->Subject = $aMailsContent[$language]['subject'];
         $mail->Body    = $aMailsContent[$language]['html'];
         $mail->AltBody = strip_tags($aMailsContent[$language]['html']);
-        $mail->MessageID='<ERCOLANI#'.$sendid.'#'.str_replace('@','#',$from).'#'.$to.'#'.uniqid('',1).'##>';
+        $mail->MessageID='<ERCOLANI#'.uniqid('',true).'#'.str_replace('@','#',$from).'#'.str_replace('@','#',$_REQUEST['email']).'#'.uniqid('',1).'##>';
         //echo "\n".$mail->MessageID;
         //exit;
         $_REQUEST['esito_mailcoupon']='ok';
@@ -181,7 +212,20 @@ if ($_REQUEST['esito']=='ok'){
         {
            $_REQUEST['esito_mailcoupon']='ko';
         }
-        
+      } else {
+        // Fallback: basic PHP mail() if PHPMailer is unavailable
+        $headers = [];
+        $headers[] = 'MIME-Version: 1.0';
+        $headers[] = 'Content-type: text/html; charset=UTF-8';
+        $headers[] = 'From: '.$fromName.' <'.$from.'>';
+        $subject = $aMailsContent[$language]['subject'];
+        $body = $aMailsContent[$language]['html'];
+        if (!@mail($_REQUEST['email'], $subject, $body, implode("\r\n", $headers))) {
+            $_REQUEST['esito_mailcoupon']='ko';
+        } else {
+            $_REQUEST['esito_mailcoupon']='ok';
+        }
+      }
 }
 
 

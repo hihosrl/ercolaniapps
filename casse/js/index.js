@@ -38,6 +38,9 @@ var nazioni = new Array("Country / Nazione","Afghanistan", "Albania", "Algeria",
 var prodotti=[];
 var timeout='';
 var customerLookupTimeout;
+var nameSearchTimeout;
+var isNameSearching = false;
+var nameAutocompleteActiveIndex = -1;
 $(function(){ 
     console.log('fgsfdg');
     $.get(CASSE_ENDPOINT + '?cmd=getProd',function(data){
@@ -74,6 +77,78 @@ $(document).ready(function() {
     } else {
         console.error('Lookup button not found in DOM!');
     }
+
+    // Name autocomplete functionality
+    $('#nome').on('input', function() {
+        var query = $(this).val().trim();
+        
+        // Clear previous timeout
+        if (nameSearchTimeout) {
+            clearTimeout(nameSearchTimeout);
+        }
+        
+        // Hide autocomplete if less than 3 characters
+        if (query.length < 3) {
+            hideNameAutocomplete();
+            setNameSpinner(false);
+            return;
+        }
+        
+        // Set timeout to avoid too many requests
+        nameSearchTimeout = setTimeout(function() {
+            setNameSpinner(true);
+            searchCustomersByName(query);
+        }, 300);
+    });
+
+    // Keyboard navigation for autocomplete list
+    $('#nome').on('keydown', function(e) {
+        var items = $('.name-autocomplete-item');
+        if (!items.length) return;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            nameAutocompleteActiveIndex = (nameAutocompleteActiveIndex + 1) % items.length;
+            updateNameAutocompleteActiveItem();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            nameAutocompleteActiveIndex = (nameAutocompleteActiveIndex - 1 + items.length) % items.length;
+            updateNameAutocompleteActiveItem();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (nameAutocompleteActiveIndex >= 0 && nameAutocompleteActiveIndex < items.length) {
+                $(items[nameAutocompleteActiveIndex]).trigger('click');
+            }
+        } else if (e.key === 'Escape') {
+            hideNameAutocomplete();
+        }
+    });
+
+    // Hide autocomplete when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#nome, .name-autocomplete-overlay').length) {
+            hideNameAutocomplete();
+        }
+    });
+
+    // Clear form button handler (top-right)
+    $(document).on('click', '#clearFormBtn', function(e){
+        e.preventDefault();
+        // Clear inputs and selects
+        $('input[type="text"], input[type="email"], input[type="tel"]').val('');
+        $('#nazione').val('Country / Nazione');
+        $('#privacy').prop('checked', false);
+        // Remove validation highlights
+        $('.nlinput').removeClass('alert');
+        $('input').removeClass('alert');
+        // Remove items and totals
+        $('.itemRow').remove();
+        $('.totalShip').remove();
+        // Hide overlays related to autocomplete and post
+        hideNameAutocomplete();
+        $('.overlaypost').hide();
+        // Hide spinner if visible
+        setNameSpinner(false);
+    });
 });
 
 //$('#nascita').on('focus',function(){
@@ -105,7 +180,7 @@ $('.pprivl').on('click',function(){
 
 $('.overlay').on('click',function (e) {
     $('.overlay').fadeOut();
-    event.stopPropagation(e)
+    e.stopPropagation();
     timeout=setTimeout(function(){
        $('.overlay').fadeIn();
         $('body').find("input").removeClass('alert'); 
@@ -114,7 +189,7 @@ $('.overlay').on('click',function (e) {
         $('#privacy').prop('checked', false);
     },2500000);
 })
-$('body').on('mounsedown keydown click', function(){
+$('body').on('mousedown keydown click', function(){
     if (typeof timeout=='number')clearTimeout(timeout);
     timeout=setTimeout(function(){
        $('.overlay').fadeIn();
@@ -128,12 +203,21 @@ var current=false;
 var data={};
 $('#savecmd').on('click',function(event){
     event.stopPropagation();
-    //$('#mailSubscribe').submit();
-    $('input, select').each(function(){
-        console.log($(this).attr('id'));
-        console.log($(this).val());
-        data[$(this).attr('id')]=$(this).val();
+    // Build payload using an allowlist of field IDs to avoid traps and undefined keys
+    var allowedIds = ['email','nome','cognome','indirizzo','citta','cap','nazione','prov','tel','nascita'];
+    data = {};
+    allowedIds.forEach(function(fid){
+        var $el = $('#'+fid);
+        if ($el.length) {
+            if ($el.is(':checkbox')) {
+                data[fid] = $el.is(':checked') ? 'on' : '';
+            } else {
+                data[fid] = $el.val();
+            }
+        }
     });
+    // Debug
+    console.log('Submit data (header fields):', data);
     console.log(data);
     if (!$('.itemRow')[0] || $('.itemRow').length==0 || !data.email || !data.prov || !data.nome || !data.cognome || !data.indirizzo || !data.citta || !data.cap || !data.tel || !data.nascita || !data.nazione || data.nazione=='Country / Nazione' || !$('#privacy').is(':checked') ){
         if (!data.email){
@@ -233,7 +317,11 @@ $('#savecmd').on('click',function(event){
                 $('#postContainer').append('<div class="discardBtn alert">IMPOSSIBILE CREARE IL PDF</div>');
             }
             setItems();
-        },'JSON')
+        },'JSON').fail(function(xhr, status, error){
+            console.error('insertData failed:', status, error);
+            console.error('Response:', xhr && xhr.responseText);
+            alert('Errore durante la creazione del modulo. Riprova o contatta il supporto.');
+        })
 
         $('.overlaypost').fadeIn(200);
         $('body').find("input").removeClass('alert'); 
@@ -245,7 +333,14 @@ $('#savecmd').on('click',function(event){
         setTimeout(function(){
             //$('.overlaypost').fadeOut(200);
         },'10000');
-        $.get(SUBSCRIBE_ENDPOINT + '?cmd=insert',data,function(data){
+        // Determine the correct subscription endpoint from environment-config with sensible fallbacks
+        var subscribeEndpoint = (typeof SUBSCRIBE_CANTINE_ENDPOINT !== 'undefined')
+            ? SUBSCRIBE_CANTINE_ENDPOINT
+            : (typeof SUBSCRIBE_VINERIA_ENDPOINT !== 'undefined'
+                ? SUBSCRIBE_VINERIA_ENDPOINT
+                : '../ercolani_subscribe_cantine.php');
+
+        $.get(subscribeEndpoint + '?cmd=insert',data,function(data){
             console.log(data);
             if (data.esito=='ok' || data.esito.substr(0,15)=='Duplicate entry'){
             console.log('newsletter aggiornata');
@@ -458,4 +553,165 @@ function showCustomerNotFoundModal(email) {
 // Close customer not found modal
 function closeCustomerNotFoundModal() {
     $('#customerNotFoundModal').fadeOut(300);
+}
+
+// Search customers by name function
+function searchCustomersByName(query) {
+    // Check if CASSE_ENDPOINT is defined
+    if (typeof CASSE_ENDPOINT === 'undefined') {
+        console.error('CASSE_ENDPOINT is not defined. Environment config may not be loaded.');
+        var endpoint = '../ercolani_casse.php';
+    } else {
+        var endpoint = CASSE_ENDPOINT;
+    }
+    
+    console.log('Searching customers by name:', query);
+    
+    $.get(endpoint + '?cmd=searchCustomersByName&query=' + encodeURIComponent(query), function(data) {
+        console.log('Name search response:', data);
+        if (data.status === 'found' && data.customers.length > 0) {
+            showNameAutocomplete(data.customers);
+        } else {
+            hideNameAutocomplete();
+        }
+    }, 'JSON').fail(function(xhr, status, error) {
+        console.error('Name search failed:', status, error);
+        hideNameAutocomplete();
+    }).always(function(){
+        setNameSpinner(false);
+    });
+}
+
+// Show name autocomplete overlay
+function showNameAutocomplete(customers) {
+    // Remove existing overlay
+    $('.name-autocomplete-overlay').remove();
+    
+    // Get position of nome input
+    var $nomeInput = $('#nome');
+    var position = $nomeInput.offset();
+    var width = $nomeInput.outerWidth();
+    
+    // Create overlay HTML
+    var overlayHtml = '<div class="name-autocomplete-overlay">';
+    
+    customers.forEach(function(customer) {
+        overlayHtml += '<div class="name-autocomplete-item" data-nome="' + customer.nome + '" data-cognome="' + customer.cognome + '" data-email="' + customer.email + '" data-nazione="' + customer.nazione + '">';
+        overlayHtml += '<span class="customer-name">' + customer.nome + ' ' + customer.cognome + '</span>';
+        overlayHtml += ' - <span class="customer-email">' + customer.email + '</span>';
+        overlayHtml += ' - <span class="customer-country">' + customer.nazione + '</span>';
+        overlayHtml += '</div>';
+    });
+    
+    overlayHtml += '</div>';
+    
+    // Add to body
+    $('body').append(overlayHtml);
+    
+    // Position the overlay
+    $('.name-autocomplete-overlay').css({
+        position: 'absolute',
+        top: position.top + $nomeInput.outerHeight(),
+        left: position.left,
+        width: width,
+        zIndex: 9999
+    });
+    
+    // Reset active index and highlight first item by default
+    nameAutocompleteActiveIndex = customers.length ? 0 : -1;
+    updateNameAutocompleteActiveItem();
+
+    // Add click handlers for autocomplete items
+    $('.name-autocomplete-item').on('click', function() {
+        var nome = $(this).data('nome');
+        var cognome = $(this).data('cognome');
+        var email = $(this).data('email');
+        var nazione = $(this).data('nazione');
+        
+        // Fill the form with selected customer data
+        $('#nome').val(nome);
+        $('#cognome').val(cognome);
+        $('#email').val(email);
+        if (nazione) {
+            $('#nazione').val(nazione);
+        }
+        
+        // Try to lookup full customer data by email
+        if (email && validateEmail(email)) {
+            lookupCustomerByEmail(email);
+        }
+        
+        // Hide autocomplete
+        hideNameAutocomplete();
+    });
+
+    // Add keyboard navigation
+    $(document).on('keydown', function(e) {
+        if ($('.name-autocomplete-overlay').length) {
+            if (e.which === 38) { // up
+                nameAutocompleteActiveIndex--;
+                if (nameAutocompleteActiveIndex < 0) nameAutocompleteActiveIndex = 0;
+                updateNameAutocompleteActiveItem();
+            } else if (e.which === 40) { // down
+                nameAutocompleteActiveIndex++;
+                if (nameAutocompleteActiveIndex >= $('.name-autocomplete-item').length) nameAutocompleteActiveIndex = $('.name-autocomplete-item').length - 1;
+                updateNameAutocompleteActiveItem();
+            } else if (e.which === 13) { // enter
+                var $active = $('.name-autocomplete-item.active');
+                if ($active.length) {
+                    var nome = $active.data('nome');
+                    var cognome = $active.data('cognome');
+                    var email = $active.data('email');
+                    var nazione = $active.data('nazione');
+                    
+                    // Fill the form with selected customer data
+                    $('#nome').val(nome);
+                    $('#cognome').val(cognome);
+                    $('#email').val(email);
+                    if (nazione) {
+                        $('#nazione').val(nazione);
+                    }
+                    
+                    // Try to lookup full customer data by email
+                    if (email && validateEmail(email)) {
+                        lookupCustomerByEmail(email);
+                    }
+                    
+                    // Hide autocomplete
+                    hideNameAutocomplete();
+                }
+            }
+        }
+    });
+}
+
+// Hide name autocomplete overlay
+function hideNameAutocomplete() {
+    $('.name-autocomplete-overlay').remove();
+    nameAutocompleteActiveIndex = -1;
+    setNameSpinner(false);
+}
+
+// Helper: Update visual active item
+function updateNameAutocompleteActiveItem() {
+    var items = $('.name-autocomplete-item');
+    items.removeClass('active');
+    if (nameAutocompleteActiveIndex >= 0 && nameAutocompleteActiveIndex < items.length) {
+        var $active = $(items[nameAutocompleteActiveIndex]);
+        $active.addClass('active');
+        // ensure into view
+        var container = $('.name-autocomplete-overlay');
+        var top = $active.position().top;
+        var cScroll = container.scrollTop();
+        var cHeight = container.height();
+        if (top < 0) container.scrollTop(cScroll + top);
+        else if (top + $active.outerHeight() > cHeight) container.scrollTop(cScroll + (top + $active.outerHeight() - cHeight));
+    }
+}
+
+// Helper: Show/hide spinner next to name field
+function setNameSpinner(show) {
+    var $sp = $('#nameLoadingSpinner');
+    if (!$sp.length) return;
+    if (show) $sp.show(); else $sp.hide();
 }
