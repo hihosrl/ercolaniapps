@@ -19,6 +19,20 @@
 * {
     -webkit-tap-highlight-color: rgba(0,75,0,157); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
 }
+
+/* Allow text selection and caret in form controls (iOS keyboard requirement) */
+.nlinput input,
+.nlinput textarea,
+.nlinput select,
+input,
+textarea,
+select {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    -webkit-touch-callout: default !important;
+    caret-color: auto;
+    cursor: text;
+}
 html:root {font-size: 1.9vw;}
 
 body {

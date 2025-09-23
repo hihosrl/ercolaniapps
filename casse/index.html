@@ -360,6 +360,7 @@ I have read and consent to the processing of my personal data as described above
                 document.addEventListener('DOMContentLoaded', function(){
                     var ids = ['email','nome','cognome','indirizzo','citta','cap','nazione','prov','tel','nascita'];
                     var token = Math.random().toString(36).slice(2);
+                    var isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
                     ids.forEach(function(id){
                         var el = document.getElementById(id);
                         if (!el) return;
@@ -372,6 +373,8 @@ I have read and consent to the processing of my personal data as described above
                             el.setAttribute('autocorrect','off');
                             el.setAttribute('autocapitalize','off');
                             el.setAttribute('spellcheck','false');
+                            // On iOS, avoid readonly entirely to allow keyboard
+                            if (isiOS && el.hasAttribute('readonly')) el.removeAttribute('readonly');
                         } catch(e){}
                     });
 
@@ -383,12 +386,17 @@ I have read and consent to the processing of my personal data as described above
                             try {
                                 var t = Math.random().toString(36).slice(2);
                                 el.setAttribute('autocomplete', 'nope-' + t);
-                                // brief readonly toggle to suppress autofill popup
-                                var wasReadOnly = el.hasAttribute('readonly');
-                                el.setAttribute('readonly', 'readonly');
-                                setTimeout(function(){
-                                    if (!wasReadOnly) el.removeAttribute('readonly');
-                                }, 60);
+                                // On non-iOS only: brief readonly toggle to suppress Chrome autofill popup
+                                if (!isiOS) {
+                                    var wasReadOnly = el.hasAttribute('readonly');
+                                    el.setAttribute('readonly', 'readonly');
+                                    setTimeout(function(){
+                                        if (!wasReadOnly) el.removeAttribute('readonly');
+                                    }, 60);
+                                } else {
+                                    // Ensure it's not readonly on iOS so the keyboard can appear
+                                    el.removeAttribute('readonly');
+                                }
                             } catch(e){}
                         };
                         el.addEventListener('focus', handler, { once: false });

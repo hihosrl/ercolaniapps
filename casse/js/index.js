@@ -181,6 +181,9 @@ $('.pprivl').on('click',function(){
 $('.overlay').on('click',function (e) {
     $('.overlay').fadeOut();
     e.stopPropagation();
+    // Once the user taps to start, unlock inputs so iOS can open the keyboard
+    $('.nlinput input').not('#privacy').prop('readonly', false);
+    $('#nascita').prop('readonly', false);
     timeout=setTimeout(function(){
        $('.overlay').fadeIn();
         $('body').find("input").removeClass('alert'); 
@@ -199,6 +202,17 @@ $('body').on('mousedown keydown click', function(){
        $('#privacy').prop('checked', false); 
     },2500000);
 })
+
+// iOS/Safari: if an input is readonly, the keyboard will not appear.
+// Ensure that tapping an input will remove readonly and focus it immediately.
+$(document).on('touchend click', '.nlinput input[readonly]', function(){
+    var $inp = $(this);
+    // Do not toggle for checkboxes
+    if ($inp.attr('id') === 'privacy') return;
+    $inp.prop('readonly', false);
+    // Focus inside the same user gesture to satisfy iOS requirement
+    this.focus();
+});
 var current=false;
 var data={};
 $('#savecmd').on('click',function(event){
