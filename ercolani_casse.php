@@ -167,8 +167,8 @@ switch($_REQUEST['cmd']){
   if ($helperScript !== '' && file_exists($helperScript)) {
     $execcmd = "/bin/bash -c \"".escapeshellcmd($helperScript)." ".escapeshellarg($htmlUrl)." ".escapeshellarg($pdfFile)."\"";
   } elseif ($wkhtmlBin !== '' && file_exists($wkhtmlBin)) {
-    // Use wkhtmltopdf directly
-    $execcmd = "/bin/bash -c \"".escapeshellarg($wkhtmlBin)." --enable-local-file-access --print-media-type --load-error-handling ignore --disable-smart-shrinking ".escapeshellarg($htmlUrl)." ".escapeshellarg($pdfFile)."\"";
+    // Use wkhtmltopdf directly (force A4 and zero margins)
+    $execcmd = "/bin/bash -c \"".escapeshellarg($wkhtmlBin)." --enable-local-file-access --print-media-type --load-error-handling ignore --page-size A4 --margin-top 0mm --margin-right 0mm --margin-bottom 0mm --margin-left 0mm --disable-smart-shrinking ".escapeshellarg($htmlUrl)." ".escapeshellarg($pdfFile)."\"";
   } else {
     $execcmd = '';
   }
@@ -182,7 +182,7 @@ switch($_REQUEST['cmd']){
       if ($helperScript !== '' && file_exists($helperScript)) {
         $execcmd = "/bin/bash -c \"".escapeshellcmd($helperScript)." ".escapeshellarg($htmlUrlLocal)." ".escapeshellarg($pdfFile)."\"";
       } elseif ($wkhtmlBin !== '' && file_exists($wkhtmlBin)) {
-        $execcmd = "/bin/bash -c \"".escapeshellarg($wkhtmlBin)." --enable-local-file-access --print-media-type --load-error-handling ignore --disable-smart-shrinking ".escapeshellarg($htmlUrlLocal)." ".escapeshellarg($pdfFile)."\"";
+        $execcmd = "/bin/bash -c \"".escapeshellarg($wkhtmlBin)." --enable-local-file-access --print-media-type --load-error-handling ignore --page-size A4 --margin-top 0mm --margin-right 0mm --margin-bottom 0mm --margin-left 0mm --disable-smart-shrinking ".escapeshellarg($htmlUrlLocal)." ".escapeshellarg($pdfFile)."\"";
       }
       $retryOut = array();
       $retryCode = 1;
@@ -211,6 +211,83 @@ switch($_REQUEST['cmd']){
       'out'=>$output,
       'pdf_dir'=>array('path'=>$destpath,'exists'=>is_dir($destpath),'writable'=>is_writable($destpath))
     ));
+  exit;
+  break;
+  case 'regeneratePdf':
+  // Regenerate an existing PDF for a given shipment_id without inserting a new order
+  if (!empty($_REQUEST['shipment_id'])) {
+    $id = (int)$_REQUEST['shipment_id'];
+    $destpath = (dirname(__FILE__)).'/pdf/';
+    if (!is_dir($destpath)) {
+      @mkdir($destpath, 0775, true);
+    }
+    $pdfFile = $destpath."er_".str_pad($id, 5, '0', STR_PAD_LEFT).".pdf";
+    $htmlUrl = $API_BASE_URL."/ercolani_casse.php?cmd=createPDF&shipment_id=".$id;
+
+    $output = array();
+    $retval = 1;
+
+    // Prefer helper script if available
+    $helperScript = trim(shell_exec('command -v wkhtmltopdf.sh 2>/dev/null'));
+    $wkhtmlBin   = trim(shell_exec('command -v wkhtmltopdf 2>/dev/null'));
+
+    if ($helperScript !== '' && file_exists($helperScript)) {
+      $execcmd = "/bin/bash -c \"".escapeshellcmd($helperScript)." ".escapeshellarg($htmlUrl)." ".escapeshellarg($pdfFile)."\"";
+    } elseif ($wkhtmlBin !== '' && file_exists($wkhtmlBin)) {
+      // Direct call fallback (force A4 and zero margins)
+      $execcmd = "/bin/bash -c \"".escapeshellarg($wkhtmlBin)." --enable-local-file-access --print-media-type --load-error-handling ignore --page-size A4 --margin-top 0mm --margin-right 0mm --margin-bottom 0mm --margin-left 0mm --disable-smart-shrinking ".escapeshellarg($htmlUrl)." ".escapeshellarg($pdfFile)."\"";
+    } else {
+      $execcmd = '';
+    }
+
+    if ($execcmd !== '') {
+      exec($execcmd, $output, $retval);
+      // Fallback to localhost URL if first attempt fails
+      if ($retval !== 0) {
+        $output[] = 'Retrying with localhost URL';
+        $htmlUrlLocal = 'http://127.0.0.1/ercolani_casse.php?cmd=createPDF&shipment_id='.$id;
+        if ($helperScript !== '' && file_exists($helperScript)) {
+          $execcmd = "/bin/bash -c \"".escapeshellcmd($helperScript)." ".escapeshellarg($htmlUrlLocal)." ".escapeshellarg($pdfFile)."\"";
+        } elseif ($wkhtmlBin !== '' && file_exists($wkhtmlBin)) {
+          $execcmd = "/bin/bash -c \"".escapeshellarg($wkhtmlBin)." --enable-local-file-access --print-media-type --load-error-handling ignore --page-size A4 --margin-top 0mm --margin-right 0mm --margin-bottom 0mm --margin-left 0mm --disable-smart-shrinking ".escapeshellarg($htmlUrlLocal)." ".escapeshellarg($pdfFile)."\"";
+        }
+        $retryOut = array();
+        $retryCode = 1;
+        exec($execcmd, $retryOut, $retryCode);
+        $output = array_merge($output, $retryOut);
+        $retval = $retryCode;
+      }
+    } else {
+      echo json_encode(array(
+        'status'=>'ko',
+        'error'=>'wkhtmltopdf or helper script not found in PATH'
+      ));
+      exit;
+    }
+
+    if ($retval == 0) {
+      $pdfUrl = $API_BASE_URL."/pdf/er_".str_pad($id, 5, '0', STR_PAD_LEFT).".pdf";
+      // Update existing pdf row, or insert if missing
+      $qU = "UPDATE `pdf` SET `pdf`='".$pdfUrl."', `is_new`=1, `creato`='".date('Y-m-d H:i:s')."' WHERE `shipment_id`='".$id."'";
+      mysql_query($qU);
+      if (mysql_affected_rows() == 0) {
+        $qI = "INSERT INTO `pdf` (`shipment_id`, `pdf`, `is_new`, `creato`, `cancellato`) VALUES ('".$id."', '".$pdfUrl."', 1, '".date('Y-m-d H:i:s')."', '1970-01-01 00:00:00')";
+        mysql_query($qI);
+      }
+      echo json_encode(array('status'=>'ok','pdf'=>$pdfUrl));
+      exit;
+    }
+
+    echo json_encode(array(
+      'status'=>'ko',
+      'error'=>'errore nella rigenerazione del pdf',
+      'cmd'=>$execcmd,
+      'retval'=>$retval,
+      'out'=>$output
+    ));
+    exit;
+  }
+  echo json_encode(array('status'=>'ko','error'=>'missing shipment_id'));
   exit;
   break;
   case 'createPDF':
