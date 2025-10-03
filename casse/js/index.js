@@ -82,6 +82,14 @@ $(document).ready(function() {
     $('#nome').on('input', function() {
         var query = $(this).val().trim();
         
+        // If user already filled email, disable name search to avoid overriding manual input
+        var emailVal = ($('#email').val() || '').trim();
+        if (emailVal.length > 0) {
+            hideNameAutocomplete();
+            setNameSpinner(false);
+            return;
+        }
+        
         // Clear previous timeout
         if (nameSearchTimeout) {
             clearTimeout(nameSearchTimeout);
@@ -103,8 +111,29 @@ $(document).ready(function() {
 
     // Keyboard navigation for autocomplete list
     $('#nome').on('keydown', function(e) {
+        var overlayOpen = $('.name-autocomplete-overlay').length > 0;
         var items = $('.name-autocomplete-item');
+        // Handle Tab/Enter regardless of items presence to ensure first-time behavior works
+        if (e.key === 'Tab') {
+            // User wants to accept typed text and move on
+            if (overlayOpen) {
+                hideNameAutocomplete();
+            }
+            // Do not prevent default so Tab moves focus to next field
+            return; // nothing else to do on Tab
+        } else if (e.key === 'Enter') {
+            // Accept typed text without selecting a suggestion; just hide the dropdown
+            if (overlayOpen) {
+                hideNameAutocomplete();
+            }
+            // Prevent default to avoid accidental form submission
+            e.preventDefault();
+            return;
+        }
+
+        // Arrow navigation requires items
         if (!items.length) return;
+
         if (e.key === 'ArrowDown') {
             e.preventDefault();
             nameAutocompleteActiveIndex = (nameAutocompleteActiveIndex + 1) % items.length;
@@ -113,11 +142,6 @@ $(document).ready(function() {
             e.preventDefault();
             nameAutocompleteActiveIndex = (nameAutocompleteActiveIndex - 1 + items.length) % items.length;
             updateNameAutocompleteActiveItem();
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (nameAutocompleteActiveIndex >= 0 && nameAutocompleteActiveIndex < items.length) {
-                $(items[nameAutocompleteActiveIndex]).trigger('click');
-            }
         } else if (e.key === 'Escape') {
             hideNameAutocomplete();
         }
@@ -140,9 +164,7 @@ $(document).ready(function() {
         // Remove validation highlights
         $('.nlinput').removeClass('alert');
         $('input').removeClass('alert');
-        // Remove items and totals
-        $('.itemRow').remove();
-        $('.totalShip').remove();
+        // Keep items and totals intact (do not clear itemsContainer)
         // Hide overlays related to autocomplete and post
         hideNameAutocomplete();
         $('.overlaypost').hide();
@@ -670,30 +692,15 @@ function showNameAutocomplete(customers) {
                 nameAutocompleteActiveIndex++;
                 if (nameAutocompleteActiveIndex >= $('.name-autocomplete-item').length) nameAutocompleteActiveIndex = $('.name-autocomplete-item').length - 1;
                 updateNameAutocompleteActiveItem();
+            } else if (e.which === 9) { // tab
+                // Hide overlay and allow focus to move forward
+                hideNameAutocomplete();
+                // Do not prevent default
             } else if (e.which === 13) { // enter
-                var $active = $('.name-autocomplete-item.active');
-                if ($active.length) {
-                    var nome = $active.data('nome');
-                    var cognome = $active.data('cognome');
-                    var email = $active.data('email');
-                    var nazione = $active.data('nazione');
-                    
-                    // Fill the form with selected customer data
-                    $('#nome').val(nome);
-                    $('#cognome').val(cognome);
-                    $('#email').val(email);
-                    if (nazione) {
-                        $('#nazione').val(nazione);
-                    }
-                    
-                    // Try to lookup full customer data by email
-                    if (email && validateEmail(email)) {
-                        lookupCustomerByEmail(email);
-                    }
-                    
-                    // Hide autocomplete
-                    hideNameAutocomplete();
-                }
+                // Hide overlay and prevent default submit
+                hideNameAutocomplete();
+                e.preventDefault();
+                return;
             }
         }
     });
