@@ -5,7 +5,7 @@
  */
 
 // Environment configuration
-$USE_PROD = false;
+$USE_PROD = true;
 $API_BASE_URL_DEV = 'https://ercolaniapps-dev.hiho.it';  // Removed www to avoid 301 redirect
 $API_BASE_URL_PROD = 'https://www.ercolaniapps.hiho.it';
 $API_BASE_URL = $USE_PROD ? $API_BASE_URL_PROD : $API_BASE_URL_DEV;
